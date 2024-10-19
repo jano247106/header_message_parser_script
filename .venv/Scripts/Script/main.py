@@ -1,6 +1,7 @@
 import re
 from xml.etree import ElementTree as ET
 import html  # Import to handle HTML escape sequences
+import os  # Import to work with file paths
 
 # Function to read XML file
 def load_xml_file(filename):
@@ -23,7 +24,7 @@ def merge_header_message(header, message):
     merged_content = re.sub(r'<messageid>', message_id1, header_content)
 
     # Replace the !payload placeholder in the header content with the message content
-    merged_content = re.sub(r'!payload(?:\s*:[\w\d]*)?', message_content, merged_content)
+    merged_content = re.sub(r'<!payload>(?:\s*:[\w\d]*)?', message_content, merged_content)
 
     # Remove any caret symbols (^) from the merged content
     merged_content = merged_content.replace('^', '')
@@ -31,7 +32,7 @@ def merge_header_message(header, message):
     return merged_content
 
 # Main function to process the XML and create all combinations of headers and messages
-def process_xml_file(filename, output_filename):
+def process_xml_file(filename):
     xml_content = load_xml_file(filename)
 
     # Parse the XML content
@@ -50,6 +51,10 @@ def process_xml_file(filename, output_filename):
             merged_content = merge_header_message(header.attrib, message.attrib)
             all_combinations.append({'merged_content': merged_content})
 
+    # Generate output filename
+    base_filename = os.path.basename(filename)
+    output_filename = f"output_{base_filename}"
+
     # Write merged combinations to output file
     with open(output_filename, 'w') as output_file:
         for combo in all_combinations:
@@ -58,6 +63,5 @@ def process_xml_file(filename, output_filename):
     print(f"Results have been saved to {output_filename}")
 
 # Example usage
-input_filename = 'v20_snortmsg.xml'  # Path to your XML file
-output_filename = 'generic_merged_output.xml'  # Path where you want to save the results
-process_xml_file(input_filename, output_filename)
+input_filename = 'vmware_esx_esximsg.xml'  # Path to your XML file
+process_xml_file(input_filename)
